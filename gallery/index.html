@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>K-Gallery
+    </title>
+    <!--good style-->
+    <link rel="stylesheet" type="text/css" href="libs/mainStyle.css">
+    <link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet">
+
+    <!--bootstrap & jquerry-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-2.2.0.min.js" type="text/javascript"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <!--sliders-->
+    <script src="libs/slick/slick.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="libs/slick/slick.css"/>
+    <link rel="stylesheet" type="text/css" href="libs/slick/slick-theme.css"/>
+
+</head>
+<body onload="initContent(getPhotos())">
+
+<script>
+
+    //global Vars
+    window.photoBarCount = 0;
+    function photoBarCountIncrement(){
+        photoBarCount++;
+
+    }
+
+
+</script>
+
+<script type="text/javascript">
+
+    function initContent(photos) {
+        //get unique folders that are gonna be created as title bars
+        var folder = [];
+        for (var i = 0; i < photos.length; i++){
+            if(!folder.includes(photos[i].folder)){
+               folder.push(photos[i].folder);
+
+            }
+
+        }
+        //main loop in which unique title bars are created and corresponding photo bars
+        for (var x = 0; x < folder.length; x++){
+            //count photos in corresponding folder
+            var photoCount = 0;
+            for (var c = 0; c < photos.length; c++){
+                if(photos[c].folder == folder[x]){
+                    photoCount++;
+
+                }
+            }
+            createTitleBar(folder[x], photoCount);
+            var photoSet = [];
+            //select photos from corresponding folder that are meant to be appended to 'red' photobar
+            for (var z = 0; z < photos.length; z++){
+                if(photos[z].folder == folder[x] && photos[z].color == "red"){
+                    photoSet.push(photos[z]);
+                }
+
+            }
+            createPhotoBar("red", photoSet);
+            console.log(photoSet);
+            photoSet = [];
+            //select photos from corresponding folder that are meant to be appended to 'amber' photobar
+            for (var z = 0; z < photos.length; z++){
+                if(photos[z].folder == folder[x] && photos[z].color == "amber"){
+                    photoSet.push(photos[z]);
+                }
+
+            }
+            createPhotoBar("amber", photoSet);
+            console.log(photoSet);
+            photoSet = [];
+            //select photos from corresponding folder that are meant to be appended to 'teal' photobar
+            for (var z = 0; z < photos.length; z++){
+                if(photos[z].folder == folder[x] && photos[z].color == "teal"){
+                    photoSet.push(photos[z]);
+                }
+
+            }
+            createPhotoBar("teal", photoSet);
+            console.log(photoSet);
+            photoSet = [];
+
+
+        }
+        //initiate sliders
+        $(".regular").slick({
+            //autoplay: true,
+            dots: false,
+            arrows: false,
+            infinite: false,
+            slidesToShow: 6,
+            slidesToScroll: 3,
+            centerMode: true,
+            rtl: true,
+            centerPadding: '0px'
+        });
+
+    }
+    //create black title bar with corresponding folderName and photocount
+    function createTitleBar(folderName, photoCount){
+        var titleBar = document.createElement("div");
+        titleBar.className = "w3-black";
+        titleBar.innerHTML = '<div class="centeredLabel">' + folderName + '</div><div class="offsetLabel"> ' + photoCount + ' <span class="glyphicon glyphicon-camera" style="color: white"></div>';
+
+        document.body.appendChild(titleBar);
+    }
+    //create tab that contains photos, with corresponding color etc.
+    function createPhotoBar(color, photoSet){
+        //create tab main color part
+        var photoBar = document.createElement("a");
+        photoBar.href = "#pbar" + photoBarCount;
+        photoBar.setAttribute('data-toggle', "collapse");
+        if(color == "red"){
+            photoBar.innerHTML = '<div class="w3-red"><span class="glyphicon glyphicon-chevron-right" style="color: white"></span></div>';
+
+        }else if(color == "amber"){
+            photoBar.innerHTML = '<div class="w3-amber"><span class="glyphicon glyphicon-chevron-right" style="color: white"></span></div>';
+
+        }else if(color == "teal"){
+            photoBar.innerHTML = '<div class="w3-teal"><span class="glyphicon glyphicon-chevron-right" ></span></div>';
+
+        }
+        //create <div> that contains slick carousel with photos inside
+        var photoBarContent = document.createElement("div");
+        //contenBar has unique id, from 0, incremented by 1
+        photoBarContent.id = "pbar" + photoBarCount;
+        photoBarContent.className = "collapse";
+
+        var slider = document.createElement("SECTION");
+        slider.className = "regular";
+        //iterate through photoset and add photos
+        for (var i = 0; i < photoSet.length; i++){
+            var sliderDiv = document.createElement("div");
+
+            var img = document.createElement("img");
+            img.src = "photos/" + photoSet[i].path;
+
+            sliderDiv.appendChild(img);
+            slider.appendChild(sliderDiv);
+        }
+        //append slick to photoBar div
+        photoBarContent.appendChild(slider);
+
+        document.body.appendChild(photoBar);
+        document.body.appendChild(photoBarContent);
+
+        photoBarCountIncrement();
+
+    }
+
+</script>
+
+
+<script>
+
+   function getPhotos(){
+
+            //contains objects with keys; folder, color, path
+            var photosContainer = [];
+            var resultString;
+            $.ajax({async: false, method: 'get', url: 'libs/getStruct.php', success: function(result){
+                resultString = result;
+
+            }});
+
+            //debug
+            resultString = "/gallery/photos/wojtek25/amber/w1.jpg /gallery/photos/janek25/amber/DSCF5045.jpg /gallery/photos/janek25/amber/DSCF5047.jpg /gallery/photos/janek25/amber/DSCF5030.jpg /gallery/photos/janek25/red/DSCF5049.jpg /gallery/photos/janek25/red/DSCF5048.jpg /gallery/photos/janek25/red/DSCF5054.jpg /gallery/photos/janek25/teal/DSCF5070.jpg /gallery/photos/janek25/teal/DSCF5103.jpg /gallery/photos/janek25/teal/DSCF5115.jpg /gallery/photos/janek25/teal/DSCF5080.jpg";
+            console.log(resultString);
+
+            //get ajax php result and split it to individual filepaths
+            var arraySplitPaths = resultString.split(' ');
+
+            //iterate throughout individual filepaths
+            for (var i = 0; i < arraySplitPaths.length; i++) {
+
+                //truncate first 16 letters, leave /folderName/color/picturePath
+                var truncatedPath = arraySplitPaths[i].substring(16);
+                //split truncated path to folder,color,filepath
+                var arraySplitContent = truncatedPath.split('/');
+                //create path from 0,1,2 elements of array and append adequate values to keys in photoContainer array
+                var pPath = (arraySplitContent[0] + "/" + arraySplitContent[1] + "/" + arraySplitContent[2]);
+
+                photosContainer.push({folder: arraySplitContent[0], color: arraySplitContent[1], path: pPath});
+            }
+
+            //pop last empty
+            photosContainer.pop();
+
+            return photosContainer;
+   }
+</script>
+
+</body>
+</html>
